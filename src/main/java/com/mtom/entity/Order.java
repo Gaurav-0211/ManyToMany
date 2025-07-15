@@ -4,13 +4,15 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Set;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
 @Data
 @Entity
-@Table(name = "order")
+@Table(name = "`order`")  // Due to order a reserved keyword.
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,8 +20,6 @@ public class Order {
     private String item;
     private int quantity;
 
-    @ManyToMany
-    @JoinColumn(name = "order_id", referencedColumnName = "id")
-    @JsonBackReference
-    private Customer customer;
+    @ManyToMany(mappedBy = "orders", cascade = CascadeType.ALL)
+    private Set<Customer> customers;
 }

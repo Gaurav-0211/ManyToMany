@@ -2,48 +2,66 @@ package com.mtom.service.impl;
 
 import com.mtom.dto.CustomerDto;
 import com.mtom.entity.Customer;
+import com.mtom.entity.Order;
 import com.mtom.repo.CustomerRepo;
+import com.mtom.repo.OrderRepo;
 import com.mtom.service.CustomerService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.Optional;
 
+@Service
 public class CustomerServiceImpl implements CustomerService {
     @Autowired
-    CustomerRepo customerRepository;
+    private final CustomerRepo customerRepo;
     @Autowired
-    ModelMapper mapper;
+    private final ModelMapper mapper;
+    private final OrderRepo orderRepo;
+
+    public CustomerServiceImpl(CustomerRepo customerRepo, OrderRepo orderRepo, ModelMapper mapper) {
+        this.customerRepo = customerRepo;
+        this.orderRepo = orderRepo;
+        this.mapper = mapper;
+    }
 
 
     @Override
-    public CustomerDto createCustomer(CustomerDto customerDto) {
-        Customer customer = mapper.map(customerDto, Customer.class);
-        Customer savedCustomer = customerRepository.save(customer);
-        return mapper.map(savedCustomer, CustomerDto.class);
+    public CustomerDto createCustomer(CustomerDto dto) {
+        Customer customer = mapper.map(dto, Customer.class);
+        Set<Order> orders = new HashSet<>();
+
+        if (dto.getOrderIds() != null) {
+            dto.getOrderIds().forEach(id -> orderRepo.findById(id).ifPresent(orders::add));
+            customer.setOrders(orders);
+        }
+
+        Customer saved = customerRepo.save(customer);
+        CustomerDto result = mapper.map(saved, CustomerDto.class);
+        result.setOrderIds(saved.getOrders().stream().map(Order::getId).collect(Collectors.toSet()));
+        return result;
     }
 
     @Override
     public List<CustomerDto> getAllCustomer() {
-        List<Customer> customers = customerRepository.findAll();
-        return customers.stream()
-                .map(customer -> mapper.map(customer, CustomerDto.class))
-                .collect(Collectors.toList());
+        return customerRepo.findAll().stream().map(customer -> {
+            CustomerDto dto = mapper.map(customer, CustomerDto.class);
+            dto.setOrderIds(customer.getOrders().stream().map(Order::getId).collect(Collectors.toSet()));
+            return dto;
+        }).collect(Collectors.toList());
     }
 
     @Override
     public CustomerDto getCustomer(long id) {
-        Optional<Customer> byId = customerRepository.findById(id);
-
-        Customer customer;
-        if(byId.isPresent()){
-            customer = byId.get();
-        }else{
-            throw new RuntimeException("Customer not exist with this id");
-        }
-        CustomerDto map = mapper.map(customer, CustomerDto.class);
-        return map;
+        return customerRepo.findById(id).map(customer -> {
+            CustomerDto dto = mapper.map(customer, CustomerDto.class);
+            dto.setOrderIds(customer.getOrders().stream().map(Order::getId).collect(Collectors.toSet()));
+            return dto;
+        }).orElse(null);
     }
 }

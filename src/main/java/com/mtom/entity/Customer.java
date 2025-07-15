@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Set;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
@@ -18,7 +20,10 @@ public class Customer {
     private String customerName;
     private String city;
 
-    @ManyToMany(mappedBy = "customer",cascade = CascadeType.ALL)
-    @JsonManagedReference
-    private Customer customer;
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "customer_orders",
+            joinColumns = @JoinColumn(name = "customer_id"),
+            inverseJoinColumns = @JoinColumn(name = "order_id")
+    )
+    private Set<Order> orders;
 }
