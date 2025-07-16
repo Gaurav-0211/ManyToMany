@@ -6,8 +6,8 @@ import com.mtom.entity.Order;
 import com.mtom.repo.CustomerRepo;
 import com.mtom.repo.OrderRepo;
 import com.mtom.service.CustomerService;
+import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -17,9 +17,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class CustomerServiceImpl implements CustomerService {
-    @Autowired
     private final CustomerRepo customerRepo;
-    @Autowired
     private final ModelMapper mapper;
     private final OrderRepo orderRepo;
 
@@ -29,20 +27,29 @@ public class CustomerServiceImpl implements CustomerService {
         this.mapper = mapper;
     }
 
-
     @Override
+    @Transactional
     public CustomerDto createCustomer(CustomerDto dto) {
         Customer customer = mapper.map(dto, Customer.class);
+
         Set<Order> orders = new HashSet<>();
 
         if (dto.getOrderIds() != null) {
-            dto.getOrderIds().forEach(id -> orderRepo.findById(id).ifPresent(orders::add));
-            customer.setOrders(orders);
+            for (Long id : dto.getOrderIds()) {
+                orderRepo.findById(id).ifPresent(orders::add);
+            }
+        }
+        customer.setOrders(orders);
+        for (Order order : orders) {
+            order.getCustomers().add(customer);
         }
 
         Customer saved = customerRepo.save(customer);
+
         CustomerDto result = mapper.map(saved, CustomerDto.class);
-        result.setOrderIds(saved.getOrders().stream().map(Order::getId).collect(Collectors.toSet()));
+        result.setOrderIds(
+                saved.getOrders().stream().map(Order::getId).collect(Collectors.toSet())
+        );
         return result;
     }
 

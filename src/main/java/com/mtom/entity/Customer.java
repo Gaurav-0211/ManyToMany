@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @AllArgsConstructor
@@ -23,7 +24,7 @@ public class Customer {
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "customer_orders",
             joinColumns = @JoinColumn(name = "customer_id"),
-            inverseJoinColumns = @JoinColumn(name = "order_id")
-    )
-    private Set<Order> orders;
+            inverseJoinColumns = @JoinColumn(name = "order_id"))
+    @JsonManagedReference
+    private Set<Order> orders = new HashSet<>();
 }

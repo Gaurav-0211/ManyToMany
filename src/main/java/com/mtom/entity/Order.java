@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @AllArgsConstructor
@@ -12,7 +13,7 @@ import java.util.Set;
 @Setter
 @Data
 @Entity
-@Table(name = "`order`")  // Due to order a reserved keyword.
+@Table(name = "orders")
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,5 +22,6 @@ public class Order {
     private int quantity;
 
     @ManyToMany(mappedBy = "orders", cascade = CascadeType.ALL)
-    private Set<Customer> customers;
+    @JsonBackReference
+    private Set<Customer> customers = new HashSet<>();
 }

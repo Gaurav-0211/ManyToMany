@@ -2,7 +2,7 @@ package com.mtom.controller;
 
 import com.mtom.dto.CustomerDto;
 import com.mtom.service.CustomerService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,8 +12,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/customer")
 public class CustomerController {
-    @Autowired
-    CustomerService service;
+    private final CustomerService service;
+
+    public CustomerController(CustomerService customerService) {
+        this.service = customerService;
+    }
 
     @PostMapping
     public ResponseEntity<CustomerDto> create(@RequestBody CustomerDto customerDto){
