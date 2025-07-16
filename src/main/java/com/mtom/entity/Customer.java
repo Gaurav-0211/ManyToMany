@@ -13,7 +13,6 @@ import java.util.Set;
 @Getter
 @Entity
 @Table(name = "customer")
-@Data
 public class Customer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,5 +25,5 @@ public class Customer {
             joinColumns = @JoinColumn(name = "customer_id"),
             inverseJoinColumns = @JoinColumn(name = "order_id"))
     @JsonManagedReference
-    private Set<Order> orders;
+    private Set<Order> orders = new HashSet<>();
 }

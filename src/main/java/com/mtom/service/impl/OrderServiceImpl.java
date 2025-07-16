@@ -16,46 +16,56 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-public class OrderServiceImpl implements OrderService
-{
+public class OrderServiceImpl implements OrderService {
+
     @Autowired
-    OrderRepo orderRepository;
+    private OrderRepo orderRepository;
+
     @Autowired
-    CustomerRepo customerRepository;
+    private CustomerRepo customerRepository;
+
     @Autowired
-    ModelMapper mapper;
+    private ModelMapper mapper;
 
     @Override
     public OrderDto createOrder(OrderDto dto) {
         Order order = mapper.map(dto, Order.class);
-        Set<Customer> customers = new HashSet<>();
 
+        Set<Customer> customers = new HashSet<>();
         if (dto.getCustomerIds() != null) {
-            dto.getCustomerIds().forEach(id -> customerRepository.findById(id).ifPresent(customers::add));
-            order.setCustomers(customers);
+            for (Long id : dto.getCustomerIds()) {
+                customerRepository.findById(id).ifPresent(customers::add);
+            }
+        }
+
+        order.setCustomers(customers);
+        for (Customer customer : customers) {
+            customer.getOrders().add(order);
         }
 
         Order saved = orderRepository.save(order);
-        OrderDto result = mapper.map(saved, OrderDto.class);
-        result.setCustomerIds(saved.getCustomers().stream().map(Customer::getId).collect(Collectors.toSet()));
-        return result;
+        return mapToDto(saved);
     }
 
     @Override
     public List<OrderDto> getAllOrder() {
-        return orderRepository.findAll().stream().map(order -> {
-            OrderDto dto = mapper.map(order, OrderDto.class);
-            dto.setCustomerIds(order.getCustomers().stream().map(Customer::getId).collect(Collectors.toSet()));
-            return dto;
-        }).collect(Collectors.toList());
+        return orderRepository.findAll().stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
     }
 
     @Override
     public OrderDto getOrderById(long id) {
-        return orderRepository.findById(id).map(order -> {
-            OrderDto dto = mapper.map(order, OrderDto.class);
-            dto.setCustomerIds(order.getCustomers().stream().map(Customer::getId).collect(Collectors.toSet()));
-            return dto;
-        }).orElse(null);
+        return orderRepository.findById(id)
+                .map(this::mapToDto)
+                .orElse(null);
+    }
+
+    private OrderDto mapToDto(Order order) {
+        OrderDto dto = mapper.map(order, OrderDto.class);
+        dto.setCustomerIds(order.getCustomers().stream()
+                .map(Customer::getId)
+                .collect(Collectors.toSet()));
+        return dto;
     }
 }

@@ -11,7 +11,6 @@ import java.util.Set;
 @NoArgsConstructor
 @Getter
 @Setter
-@Data
 @Entity
 @Table(name = "orders")
 public class Order {
@@ -23,5 +22,5 @@ public class Order {
 
     @ManyToMany(mappedBy = "orders", cascade = CascadeType.ALL)
     @JsonBackReference
-    private Set<Customer> customers;
+    private Set<Customer> customers = new HashSet<>();
 }
