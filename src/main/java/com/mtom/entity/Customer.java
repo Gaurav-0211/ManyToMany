@@ -26,5 +26,5 @@ public class Customer {
             joinColumns = @JoinColumn(name = "customer_id"),
             inverseJoinColumns = @JoinColumn(name = "order_id"))
     @JsonManagedReference
-    private Set<Order> orders = new HashSet<>();
+    private Set<Order> orders;
 }

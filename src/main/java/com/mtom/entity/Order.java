@@ -23,5 +23,5 @@ public class Order {
 
     @ManyToMany(mappedBy = "orders", cascade = CascadeType.ALL)
     @JsonBackReference
-    private Set<Customer> customers = new HashSet<>();
+    private Set<Customer> customers;
 }

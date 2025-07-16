@@ -13,6 +13,5 @@ public class OrderDto {
     private long id;
     private String item;
     private int quantity;
-    private OrderDto orderDto;
     private Set<Long> customerIds;
 }

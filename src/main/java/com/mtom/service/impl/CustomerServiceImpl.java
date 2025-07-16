@@ -6,7 +6,6 @@ import com.mtom.entity.Order;
 import com.mtom.repo.CustomerRepo;
 import com.mtom.repo.OrderRepo;
 import com.mtom.service.CustomerService;
-import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +27,6 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    @Transactional
     public CustomerDto createCustomer(CustomerDto dto) {
         Customer customer = mapper.map(dto, Customer.class);
 
